@@ -5,59 +5,51 @@
   <title>Days of the Year Widget</title>
   <style>
     html, body {
-      margin: 0; 
+      margin: 0;
       padding: 0;
-      /* Background set to #2e2e2e */
-      background: #2e2e2e;
-      /* Default text color can stay light to contrast background 
-         (used for anything not specifically styled, e.g. the dots) */
-      color: #fff;
+      background: #2e2e2e; /* dark gray bg */
+      color: #fff;         /* default text color (used for dots, etc.) */
       font-family: sans-serif;
     }
     #widget {
-      /* Center the widget contents both horizontally & vertically */
+      /* Center the widget both horizontally and vertically */
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-
+    /* A container so dots + labels flow together in one “column” */
     .dots-wrap {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
+      display: inline-block;  /* shrink‐wrap to content width */
     }
-
+    /* The grid of dots */
     .dots-container {
-      display: grid;
-      /* Increase gap to add more space between dots */
-      grid-template-columns: repeat(23, auto);
-      grid-gap: 8px;
-      margin-bottom: 10px; 
+      display: inline-grid;   /* inline-grid so width = sum of columns */
+      grid-template-columns: repeat(23, auto); 
+      grid-gap: 8px;          /* increased spacing between dots */
+      margin-bottom: 10px;
     }
-
     .dot {
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      /* Default “unfilled” dot color */
-      background-color: #555;
+      background-color: #555;  /* default gray for unfilled days */
     }
     .filled {
-      /* “Filled” dot color */
-      background-color: #fff;
+      background-color: #fff;  /* white for completed days */
     }
-
+    /* The row with the year (left) and days-left (right) */
     .labels {
-      width: 100%;
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
-      /* Year + days‐left text color => #1142fd */
-      color: #1142fd;
+      font-size: 16px;        /* 2px bigger than the default 14px */
+      color: #1142fd;         /* per request */
       letter-spacing: 0.5px;
+      /* The width will match the grid’s width if placed
+         directly below it inside .dots-wrap (both are inline-block). */
     }
     .labels > div {
+      /* small horizontal padding */
       margin: 0 10px;
     }
   </style>
@@ -77,17 +69,36 @@
 (function() {
   const now = new Date();
   const year = now.getFullYear();
+  
+  // Calculate day of year
   const startOfYear = new Date(year, 0, 1);
-  const dayOfYear = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000)) + 1;
-
-  // Check for leap year
+  const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+  
+  // Check if leap year
   const isLeap = (year % 400 === 0) || ((year % 4 === 0) && (year % 100 !== 0));
   const daysInYear = isLeap ? 366 : 365;
   const daysLeft = daysInYear - dayOfYear;
 
+  // Compute ISO week number (week starts Monday)
+  function getISOWeek(date) {
+    // Make a copy
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    // day 0 is Sunday => set day to 7
+    const day = d.getUTCDay() || 7; 
+    // Shift date so that the Thursday is in the current week
+    d.setUTCDate(d.getUTCDate() + 4 - day);
+    // Get first day of that year
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    // Week number is the difference in weeks between d and yearStart
+    const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return weekNum;
+  }
+  const weekNum = getISOWeek(now);
+
   // Update the labels
-  document.getElementById('year-label').textContent = year;
-  document.getElementById('days-left-label').textContent = daysLeft + ' days left';
+  // e.g. "2025 | W3"
+  document.getElementById('year-label').textContent = `${year} | W${weekNum}`;
+  document.getElementById('days-left-label').textContent = `${daysLeft} days left`;
 
   // Create the dots
   const dotsContainer = document.getElementById('dots');
