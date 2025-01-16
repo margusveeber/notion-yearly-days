@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Days of the Year Widget</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      background: #000; 
+      color: #fff;
+      font-family: sans-serif;
+      overflow: hidden; /* to avoid scrollbars in small embeds */
+    }
+    #widget {
+      position: relative;
+      width: 100vw; 
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .dots-container {
+      display: grid;
+      /* Adjust columns & gap to your preference.
+         For example, 23 columns x (up to) 16 rows = 368 dots max. */
+      grid-template-columns: repeat(23, auto);
+      grid-auto-rows: auto;
+      grid-gap: 6px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #555; /* default gray */
+    }
+    .filled {
+      background-color: #fff; /* bright white for passed days */
+    }
+    /* Positioning of text labels in corners */
+    #year-label, #days-left-label {
+      position: absolute;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      color: #ccc;
+    }
+    #year-label {
+      bottom: 10px;
+      left: 20px;
+    }
+    #days-left-label {
+      bottom: 10px;
+      right: 20px;
+    }
+  </style>
+</head>
+<body>
+<div id="widget">
+  <div id="year-label"></div>
+  <div class="dots-container" id="dots"></div>
+  <div id="days-left-label"></div>
+</div>
+
+<script>
+(function() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const startOfYear = new Date(year, 0, 1); // Jan 1 of this year
+  const dayOfYear = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000)) + 1;
+
+  // Check if leap year
+  const isLeap = (year % 400 === 0) || ((year % 4 === 0) && (year % 100 !== 0));
+  const daysInYear = isLeap ? 366 : 365;
+  const daysLeft = daysInYear - dayOfYear;
+
+  // Fill in year and days-left labels
+  document.getElementById('year-label').textContent = year;
+  document.getElementById('days-left-label').textContent = daysLeft + ' days left';
+
+  // Create dots
+  const dotsContainer = document.getElementById('dots');
+  for (let i = 1; i <= daysInYear; i++) {
+    const dot = document.createElement('div');
+    dot.classList.add('dot');
+    if (i <= dayOfYear) {
+      dot.classList.add('filled');
+    }
+    dotsContainer.appendChild(dot);
+  }
+})();
+</script>
+</body>
+</html>
