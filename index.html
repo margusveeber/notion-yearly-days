@@ -7,50 +7,60 @@
     html, body {
       margin: 0;
       padding: 0;
-      background: #2e2e2e; /* dark gray bg */
-      color: #fff;         /* default text color (used for dots, etc.) */
+      background: #2e2e2e; /* dark gray background */
+      color: #fff;          /* default text color (dots, etc.) */
       font-family: sans-serif;
     }
     #widget {
-      /* Center the widget both horizontally and vertically */
+      /* Center the widget in the page */
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    /* A container so dots + labels flow together in one “column” */
+
+    /* Use an inline-grid so the width of .dots-wrap is exactly 
+       the width of the dots grid. Then put the labels in the next row. */
     .dots-wrap {
-      display: inline-block;  /* shrink‐wrap to content width */
+      display: inline-grid;
+      grid-template-rows: auto auto; /* first row: dots, second row: labels */
+      justify-items: start; /* align items to the left */
     }
-    /* The grid of dots */
+
     .dots-container {
-      display: inline-grid;   /* inline-grid so width = sum of columns */
-      grid-template-columns: repeat(23, auto); 
-      grid-gap: 8px;          /* increased spacing between dots */
-      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: repeat(23, auto);
+      grid-gap: 8px; /* spacing between dots */
     }
+
     .dot {
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      background-color: #555;  /* default gray for unfilled days */
+      background-color: #555; /* unfilled color */
     }
     .filled {
-      background-color: #fff;  /* white for completed days */
+      background-color: #fff; /* filled color */
     }
-    /* The row with the year (left) and days-left (right) */
+
     .labels {
+      /* Occupies the second row, same width as .dots-container */
       display: flex;
-      justify-content: space-between;
-      font-size: 16px;        /* 2px bigger than the default 14px */
-      color: #1142fd;         /* per request */
+      justify-content: space-between; 
+      align-items: center; 
+      width: 100%; /* matches the grid width exactly */
+      font-size: 16px; /* bigger text */
+      font-weight: bold;
+      color: #1142fd;  /* requested color */
       letter-spacing: 0.5px;
-      /* The width will match the grid’s width if placed
-         directly below it inside .dots-wrap (both are inline-block). */
+      margin-top: 8px; /* small spacing above labels */
     }
-    .labels > div {
-      /* small horizontal padding */
-      margin: 0 10px;
+    /* No extra margins for the label items themselves
+       so they align exactly with the first and last dots. */
+    .label-left, .label-right {
+      /* Just ensuring they line up flush with the edges */
+      margin: 0;
+      padding: 0;
     }
   </style>
 </head>
@@ -59,8 +69,8 @@
   <div class="dots-wrap">
     <div class="dots-container" id="dots"></div>
     <div class="labels">
-      <div id="year-label"></div>
-      <div id="days-left-label"></div>
+      <div class="label-left" id="year-label"></div>
+      <div class="label-right" id="days-left-label"></div>
     </div>
   </div>
 </div>
@@ -70,33 +80,26 @@
   const now = new Date();
   const year = now.getFullYear();
   
-  // Calculate day of year
+  // Calculate day of the year
   const startOfYear = new Date(year, 0, 1);
   const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-  
-  // Check if leap year
+
+  // Check for leap year
   const isLeap = (year % 400 === 0) || ((year % 4 === 0) && (year % 100 !== 0));
   const daysInYear = isLeap ? 366 : 365;
   const daysLeft = daysInYear - dayOfYear;
 
   // Compute ISO week number (week starts Monday)
   function getISOWeek(date) {
-    // Make a copy
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    // day 0 is Sunday => set day to 7
     const day = d.getUTCDay() || 7; 
-    // Shift date so that the Thursday is in the current week
     d.setUTCDate(d.getUTCDate() + 4 - day);
-    // Get first day of that year
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    // Week number is the difference in weeks between d and yearStart
-    const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    return weekNum;
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   }
   const weekNum = getISOWeek(now);
 
-  // Update the labels
-  // e.g. "2025 | W3"
+  // Update labels => "2025 | W3" on the left, "xyz days left" on the right
   document.getElementById('year-label').textContent = `${year} | W${weekNum}`;
   document.getElementById('days-left-label').textContent = `${daysLeft} days left`;
 
@@ -105,9 +108,7 @@
   for (let i = 1; i <= daysInYear; i++) {
     const dot = document.createElement('div');
     dot.classList.add('dot');
-    if (i <= dayOfYear) {
-      dot.classList.add('filled');
-    }
+    if (i <= dayOfYear) dot.classList.add('filled');
     dotsContainer.appendChild(dot);
   }
 })();
