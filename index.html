@@ -7,14 +7,15 @@
     html, body {
       margin: 0; 
       padding: 0;
-      /* Changed from black (#000) to light gray (#ddd): */
-      background: #ddd; 
-      /* Darker text so it’s visible on light background: */
-      color: #333; 
+      /* Background set to #2e2e2e */
+      background: #2e2e2e;
+      /* Default text color can stay light to contrast background 
+         (used for anything not specifically styled, e.g. the dots) */
+      color: #fff;
       font-family: sans-serif;
     }
     #widget {
-      /* So widget contents are centered vertically & horizontally */
+      /* Center the widget contents both horizontally & vertically */
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -22,7 +23,6 @@
     }
 
     .dots-wrap {
-      /* Container holding the dots + labels together */
       display: inline-flex;
       flex-direction: column;
       align-items: center;
@@ -30,22 +30,21 @@
 
     .dots-container {
       display: grid;
-      /* Adjust columns & gap to taste 
-         23 columns x ~16 rows => ~368 potential dots */
+      /* Increase gap to add more space between dots */
       grid-template-columns: repeat(23, auto);
-      grid-gap: 4px;
-      margin-bottom: 10px; /* space above labels */
+      grid-gap: 8px;
+      margin-bottom: 10px; 
     }
 
     .dot {
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      /* Default “unfilled” dot is medium gray */
-      background-color: #555; 
+      /* Default “unfilled” dot color */
+      background-color: #555;
     }
     .filled {
-      /* Bright white for passed days */
+      /* “Filled” dot color */
       background-color: #fff;
     }
 
@@ -54,12 +53,12 @@
       display: flex;
       justify-content: space-between;
       font-size: 14px;
-      /* Gray for the labels, can tweak as desired */
-      color: #666; 
+      /* Year + days‐left text color => #1142fd */
+      color: #1142fd;
       letter-spacing: 0.5px;
     }
     .labels > div {
-      margin: 0 10px; /* small horizontal padding around text */
+      margin: 0 10px;
     }
   </style>
 </head>
@@ -86,7 +85,7 @@
   const daysInYear = isLeap ? 366 : 365;
   const daysLeft = daysInYear - dayOfYear;
 
-  // Set the labels
+  // Update the labels
   document.getElementById('year-label').textContent = year;
   document.getElementById('days-left-label').textContent = daysLeft + ' days left';
 
