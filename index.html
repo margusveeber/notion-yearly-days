@@ -11,40 +11,40 @@
       color: #fff;
       font-family: sans-serif;
     }
+    /* The main widget container with fixed dimensions:
+       - tweak width/height as you like 
+       - removing min-height:100vh ensures it doesn't fill the entire screen in Notion
+    */
     #widget {
-      /* So widget contents are centered */
-      min-height: 100vh;
+      width: 450px; 
+      height: 450px;
+      margin: 0 auto; /* center horizontally if there's space */
       display: flex;
+      align-items: center; 
       justify-content: center;
-      align-items: center;
     }
-
     .dots-wrap {
-      /* This container holds dots + labels together. */
-      display: inline-flex;
+      display: flex;
       flex-direction: column;
       align-items: center;
     }
-
     .dots-container {
       display: grid;
-      /* Adjust columns & gap to taste. 
-         23 columns x ~16 rows = ~368 potential dots. */
-      grid-template-columns: repeat(23, auto);
-      grid-gap: 4px;
-      margin-bottom: 10px; /* space above labels */
+      /* Increase columns or gap to make it look fuller/bigger */
+      grid-template-columns: repeat(25, auto);
+      grid-gap: 6px;
+      margin-bottom: 12px;
     }
-
     .dot {
-      width: 5px;
-      height: 5px;
+      /* Increased size to be more visible */
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background-color: #555; /* default gray */
     }
     .filled {
       background-color: #fff; /* bright white for passed days */
     }
-
     .labels {
       width: 100%;
       display: flex;
@@ -52,10 +52,7 @@
       font-size: 14px;
       color: #ccc;
       letter-spacing: 0.5px;
-    }
-    .labels > div {
-      /* Just some spacing around the labels */
-      margin: 0 10px;
+      padding: 0 10px;
     }
   </style>
 </head>
@@ -74,15 +71,15 @@
 (function() {
   const now = new Date();
   const year = now.getFullYear();
-  const startOfYear = new Date(year, 0, 1); // Jan 1 of this year
-  const dayOfYear = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000)) + 1;
+  const startOfYear = new Date(year, 0, 1); 
+  const dayOfYear = Math.floor((now - startOfYear) / (1000*60*60*24)) + 1;
 
-  // Check if leap year:
+  // Check if leap year
   const isLeap = (year % 400 === 0) || ((year % 4 === 0) && (year % 100 !== 0));
   const daysInYear = isLeap ? 366 : 365;
   const daysLeft = daysInYear - dayOfYear;
 
-  // Fill in labels
+  // Update labels
   document.getElementById('year-label').textContent = year;
   document.getElementById('days-left-label').textContent = daysLeft + ' days left';
 
