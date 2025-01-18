@@ -6,59 +6,51 @@
   <style>
     html, body {
       margin: 0;
-      /* small left and right padding */
       padding-right: 5px;
       padding-left: 5px;
-      background: #252525; /* dark gray background */
-      color: #fff;          /* default text color (dots, etc.) */
+      background: #252525;
+      color: #fff;
       font-family: sans-serif;
     }
     #widget {
-      /* Center the widget in the page */
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    /* Use an inline-grid so the width of .dots-wrap is exactly 
-       the width of the dots grid. Then put the labels in the next row. */
     .dots-wrap {
       display: inline-grid;
-      grid-template-rows: auto auto; /* first row: dots, second row: labels */
-      justify-items: start; /* align items to the left edge */
+      grid-template-rows: auto auto;
+      justify-items: start;
     }
     .dots-container {
       display: grid;
-      /* FEWER COLUMNS => more rows */
       grid-template-columns: repeat(16, auto);
-      grid-gap: 8px; /* spacing between dots */
+      grid-gap: 8px;
     }
     .dot {
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      background-color: #555; /* unfilled color */
+      background-color: #555;
+      transition: background-color 0.3s ease;
     }
     .filled {
-      background-color: #fff; /* filled color */
+      background-color: #fff;
     }
     .labels {
-      /* Occupies the second row, same width as .dots-container */
       display: flex;
-      justify-content: space-between; 
-      align-items: center; 
-      width: 100%; /* matches the grid width exactly */
-      font-size: 16px; 
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      font-size: 16px;
       font-weight: bold;
       letter-spacing: 0.5px;
-      margin-top: 8px; /* small spacing above labels */
+      margin-top: 8px;
     }
     .label-left, .label-right {
       margin: 0;
       padding: 0;
-      /* The overall text color was originally #1142fd,
-         but we’ll split it so only some parts are blue,
-         and some parts are white via inline spans. */
       color: #1142fd;
     }
   </style>
@@ -73,56 +65,80 @@
     </div>
   </div>
 </div>
-
 <script>
 (function() {
-  const now = new Date();
-  const year = now.getFullYear();
-  
-  // Calculate day of the year
-  const startOfYear = new Date(year, 0, 1);
-  const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+  let currentDayOfYear = 0;
+  let currentYear = 0;
 
-  // Check for leap year
-  const isLeap = (year % 400 === 0) || ((year % 4 === 0) && (year % 100 !== 0));
-  const daysInYear = isLeap ? 366 : 365;
-  const daysLeft = daysInYear - dayOfYear;
-
-  // Compute ISO week number (week starts Monday)
   function getISOWeek(date) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    // day 0 is Sunday => set day to 7
-    const day = d.getUTCDay() || 7; 
-    // Shift date so that the Thursday is in the current week
+    const day = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - day);
-    // Get first day of that year
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   }
-  const weekNum = getISOWeek(now);
 
-  // Build the left label: year in white, then blue " | Wxx"
-  document.getElementById('year-label').innerHTML = `
-    <span style="color:#fff;">${year}</span>
-    <span style="color:#1142fd;"> | W${weekNum}</span>
-  `;
+  function updateDisplay() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const startOfYear = new Date(year, 0, 1);
+    const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+    const isLeap = (year % 400 === 0) || ((year % 4 === 0) && (year % 100 !== 0));
+    const daysInYear = isLeap ? 366 : 365;
+    const daysLeft = daysInYear - dayOfYear;
+    const weekNum = getISOWeek(now);
 
-  // Build the right label: daysLeft in white, then blue " days left"
-  document.getElementById('days-left-label').innerHTML = `
-    <span style="color:#fff;">${daysLeft}</span>
-    <span style="color:#1142fd;"> days left</span>
-  `;
-
-  // Create the dots
-  const dotsContainer = document.getElementById('dots');
-  for (let i = 1; i <= daysInYear; i++) {
-    const dot = document.createElement('div');
-    dot.classList.add('dot');
-    if (i <= dayOfYear) {
-      dot.classList.add('filled');
+    // Check if we need to rebuild the dots (new year)
+    if (year !== currentYear) {
+      currentYear = year;
+      const dotsContainer = document.getElementById('dots');
+      dotsContainer.innerHTML = ''; // Clear existing dots
+      
+      // Create new dots
+      for (let i = 1; i <= daysInYear; i++) {
+        const dot = document.createElement('div');
+        dot.classList.add('dot');
+        if (i <= dayOfYear) {
+          dot.classList.add('filled');
+        }
+        dotsContainer.appendChild(dot);
+      }
     }
-    dotsContainer.appendChild(dot);
+    // Update dots if day changed
+    else if (dayOfYear !== currentDayOfYear) {
+      const dots = document.querySelectorAll('.dot');
+      for (let i = currentDayOfYear + 1; i <= dayOfYear; i++) {
+        if (dots[i - 1]) {
+          dots[i - 1].classList.add('filled');
+        }
+      }
+    }
+
+    currentDayOfYear = dayOfYear;
+
+    // Update labels
+    document.getElementById('year-label').innerHTML = `
+      <span style="color:#fff;">${year}</span>
+      <span style="color:#1142fd;"> | W${weekNum}</span>
+    `;
+    document.getElementById('days-left-label').innerHTML = `
+      <span style="color:#fff;">${daysLeft}</span>
+      <span style="color:#1142fd;"> days left</span>
+    `;
   }
+
+  // Initial update
+  updateDisplay();
+
+  // Update every minute
+  setInterval(updateDisplay, 60000);
+
+  // Also update when the tab becomes visible again
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      updateDisplay();
+    }
+  });
 })();
 </script>
 </body>
